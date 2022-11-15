@@ -33,6 +33,19 @@ const handleTrackMessage = async (message: string) => {
             },
           }
       );
+      await axios.delete(
+          `https://api.spotify.com/v1/playlists/${playlist}/tracks`,
+          {
+            data: {
+              tracks: trackUris.map((uri) => {
+                return {uri};
+              }),
+            },
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${tokenResponse.data.access_token}`,
+            },
+          });
       await axios.post(
           `https://api.spotify.com/v1/playlists/${playlist}/tracks`,
           {
