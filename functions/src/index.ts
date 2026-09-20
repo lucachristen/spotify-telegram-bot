@@ -12,9 +12,9 @@ type RuntimeConfig = {
 };
 
 const config = defineJsonSecret<RuntimeConfig>("SPOTIFY_CONFIG");
-const oldFormatRegex =
+
+const formatRegex =
   /https:\/\/open\.spotify\.com\/track\/([a-zA-Z0-9]{2,})(\S*)/g;
-const newFormatRegex = /https:\/\/spotify\.link\/([a-zA-Z0-9]{2,})(\S*)/g;
 
 type TelegramUpdate = {
   message?: {
@@ -42,27 +42,12 @@ const handleTrackMessage = async (message: string) => {
 };
 
 const getTrackUris = async (message: string): Promise<string[]> => {
-  const oldFormatUris = [...message.matchAll(oldFormatRegex)].map(
+  const oldFormatUris = [...message.matchAll(formatRegex)].map(
     (match) => `spotify:track:${match[1]}`,
   );
 
-  const trackUriPromises = [...message.matchAll(newFormatRegex)].map(
-    async (match) => {
-      const url = `https://spotify.link/${match[1]}`;
-      const response = await axios.get(url);
-      const uriMatches = [...(response.data?.matchAll(oldFormatRegex) ?? [])];
-      return uriMatches?.[0]?.[1]
-        ? `spotify:track:${uriMatches[0][1]}`
-        : undefined;
-    },
-  );
-
-  const newFormatUris = (await Promise.all(trackUriPromises))
-    .filter(Boolean)
-    .map((value) => value as string);
-
   // Filter out duplicate values
-  return [...oldFormatUris, ...newFormatUris].filter(
+  return oldFormatUris.filter(
     (value, index, array) => array.indexOf(value) === index,
   );
 };
