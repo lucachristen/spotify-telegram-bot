@@ -2,14 +2,16 @@ import { defineJsonSecret } from "firebase-functions/params";
 import { onRequest } from "firebase-functions/v2/https";
 import axios from "axios";
 
-type SpotifyConfig = {
-  client_id: string;
-  client_secret: string;
-  refresh_token: string;
-  playlist: string;
+type RuntimeConfig = {
+  spotify: {
+    client_id: string;
+    client_secret: string;
+    refresh_token: string;
+    playlist: string;
+  };
 };
 
-const spotify = defineJsonSecret<SpotifyConfig>("SPOTIFY_CONFIG");
+const config = defineJsonSecret<RuntimeConfig>("SPOTIFY_CONFIG");
 const oldFormatRegex =
   /https:\/\/open\.spotify\.com\/track\/([a-zA-Z0-9]{2,})(\S*)/g;
 const newFormatRegex = /https:\/\/spotify\.link\/([a-zA-Z0-9]{2,})(\S*)/g;
@@ -66,7 +68,7 @@ const getTrackUris = async (message: string): Promise<string[]> => {
 };
 
 const getAccessToken = async (): Promise<string> => {
-  const { client_id, client_secret, refresh_token } = spotify.value();
+  const { client_id, client_secret, refresh_token } = config.value().spotify;
   const response = await axios.post(
     "https://accounts.spotify.com/api/token",
     {
@@ -90,7 +92,7 @@ const deleteIfAlreadyExists = async (
   accessToken: string,
 ): Promise<void> => {
   return await axios.delete(
-    `https://api.spotify.com/v1/playlists/${spotify.value().playlist}/tracks`,
+    `https://api.spotify.com/v1/playlists/${config.value().spotify.playlist}/tracks`,
     {
       data: {
         tracks: trackUris.map((uri) => {
@@ -110,7 +112,7 @@ const addToPlaylist = async (
   accessToken: string,
 ): Promise<void> => {
   await axios.post(
-    `https://api.spotify.com/v1/playlists/${spotify.value().playlist}/tracks`,
+    `https://api.spotify.com/v1/playlists/${config.value().spotify.playlist}/tracks`,
     {
       uris: trackUris,
       position: 0,
@@ -128,7 +130,7 @@ const addToPlaylist = async (
 export const bot = onRequest(
   {
     region: "europe-west6",
-    secrets: [spotify],
+    secrets: [config],
   },
   async (req, res) => {
     try {
