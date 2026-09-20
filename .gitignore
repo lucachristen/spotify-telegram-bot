@@ -113,5 +113,6 @@ typings/
 # Node.js dependency directory
 node_modules/
 
-# Firebase local env
+# Firebase local configuration
+.firebaserc
 .runtimeconfig.json
