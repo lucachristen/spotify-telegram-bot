@@ -34,7 +34,7 @@ const handleTrackMessage = async (message: string) => {
   console.log({ trackUris });
 
   if (trackUris.length > 0) {
-    // Always get the fresh access token for each request (ugly af but who cares)
+    // Always get the fresh access token for each request (ugly but works)
     const accessToken = await getAccessToken();
     await deleteIfAlreadyExists(trackUris, accessToken);
     await addToPlaylist(trackUris, accessToken);
