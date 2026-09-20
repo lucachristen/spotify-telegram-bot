@@ -7,3 +7,8 @@ typings/
 
 # Node.js dependency directory
 node_modules/
+
+# Local Firebase parameters and secrets
+.env*
+.secret*
+!.env.example
